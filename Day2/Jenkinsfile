@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = 'day2-node-app:latest'
+    }
+
+    stages {
+        stage('Clone Repo') {
+            steps {
+                echo 'Repository already cloned by Jenkins'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('day2') {
+                    sh 'docker build -t $IMAGE_NAME .'
+                }
+            }
+        }
+
+        stage('Run App in Container') {
+            steps {
+                sh 'docker rm -f day2-app || true' // clean up if running
+                sh 'docker run -d -p 3000:3000 --name day2-app $IMAGE_NAME'
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Cleaning up container if needed'
+            sh 'docker rm -f day2-app || true'
+        }
+    }
+}
